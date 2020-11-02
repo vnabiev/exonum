@@ -88,11 +88,13 @@ impl ApiBackend for ApiBuilder {
     fn wire(&self, mut output: Self::Backend) -> Self::Backend {
         for handler in self.handlers.clone() {
             let inner = handler.inner;
-            output = output.route(
-                &handler.name,
-                web::method(handler.method.clone())
-                    .to(move |request, payload| inner(request, payload)),
-            );
+            output = output
+                .app_data(web::JsonConfig::default().limit(2048 * 1024))
+                .route(
+                    &handler.name,
+                    web::method(handler.method.clone())
+                        .to(move |request, payload| inner(request, payload)),
+                );
         }
         output
     }
